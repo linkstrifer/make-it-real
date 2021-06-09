@@ -40,6 +40,38 @@ const UserModel = mongoose.model("User", UserSchema);
 
 // Routes
 
+const requireUser = async (request, response, next) => {
+  const { userId } = request.session;
+
+  if (userId) {
+    const user = await UserModel.findById(userId);
+
+    request.user = user;
+    next();
+  } else {
+    response.redirect("/login");
+  }
+};
+
+const loggedIn = (request, response, next) => {
+  const { userId } = request.session;
+  const { path } = request;
+  const paths = ["/", "/logout"];
+
+  if (!paths.includes(path) && userId) {
+    response.redirect("/");
+  } else {
+    next();
+  }
+};
+
+const logger = (request, response, next) => {
+  console.log(`Request to ${request.path}`);
+  next();
+};
+
+app.use(logger);
+
 app.use(
   cookieSession({
     secret: "make-it-real",
@@ -49,9 +81,9 @@ app.use(
 
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/", express.static(path.join(__dirname, "public")));
+app.use("/", loggedIn, express.static(path.join(__dirname, "public")));
 
-app.post("/login", async (request, response) => {
+app.post("/login", loggedIn, async (request, response) => {
   const { email, password } = request.body;
 
   const user = await UserModel.authenticate(email, password);
@@ -59,9 +91,9 @@ app.post("/login", async (request, response) => {
   if (user) {
     request.session.userId = user._id;
     response.redirect("/");
+  } else {
+    response.redirect("/login");
   }
-
-  response.redirect("/login");
 });
 
 app.get("/logout", (request, response) => {
@@ -95,17 +127,11 @@ app.post("/register", async (request, response) => {
   });
 });
 
-app.get("/", async (request, response) => {
+app.get("/", requireUser, async (request, response) => {
   const users = await UserModel.find({});
-  const { userId } = request.session;
+  const { user } = request;
 
-  let message = "";
-
-  if (userId) {
-    const user = await UserModel.findById(userId);
-
-    message = `Hola ${user.name}`;
-  }
+  const message = `Hola ${user.name}`;
 
   const table = `
     ${
