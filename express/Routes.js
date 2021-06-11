@@ -1,3 +1,5 @@
+const bcrypt = require("bcrypt");
+
 const { UserModel } = require("./mongoose");
 
 const loginPost = async (request, response) => {
