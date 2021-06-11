@@ -1,9 +1,12 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
-mongoose.connect("mongodb://localhost:27017/make-it-real", {
-  useNewUrlParser: true,
-});
+mongoose.connect(
+  process.env.MONGO_URL || "mongodb://localhost:27017/make-it-real",
+  {
+    useNewUrlParser: true,
+  }
+);
 
 mongoose.connection.on("error", (error) => console.error(error));
 
