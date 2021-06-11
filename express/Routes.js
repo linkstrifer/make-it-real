@@ -45,34 +45,9 @@ const register = async (request, response) => {
 };
 
 const root = async (request, response) => {
-  const users = await UserModel.find({});
-  const { user } = request;
+  const users = await UserModel.find({}, "name email");
 
-  const message = `Hola ${user.name}`;
-
-  const table = `
-    ${
-      request.session.userId
-        ? `<a href="/logout">Logout</a>`
-        : `<a href="/login">Login</a><a href="/register">Register</a>`
-    }
-    ${message}
-    <table>
-      <thead>
-        <th>Name</th>
-        <th>Email</th>
-      </thead>
-      <tbody>
-        ${users
-          .map((user) => {
-            return `<tr><td>${user.name}</td><td>${user.email}</td>`;
-          })
-          .join("")}
-      </tbody>
-    </table>
-  `;
-
-  response.send(table);
+  response.json(users);
 };
 
 module.exports = {

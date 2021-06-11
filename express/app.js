@@ -62,6 +62,6 @@ app.get("/logout", logout);
 
 app.post("/register", register);
 
-app.get("/", requireUser, root);
+app.get("/", root);
 
 app.listen(port, () => console.log(`Server listening on port ${port}`));
